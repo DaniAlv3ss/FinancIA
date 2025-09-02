@@ -158,12 +158,12 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithRedirect, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, addDoc, deleteDoc, onSnapshot, collection, setDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         window.firebase = {
             initializeApp,
-            getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut,
+            getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithRedirect, signOut,
             getFirestore, doc, addDoc, deleteDoc, onSnapshot, collection, setDoc, setLogLevel
         };
     </script>
@@ -472,7 +472,10 @@
         
         async function signInWithGoogle() {
             const provider = new window.firebase.GoogleAuthProvider();
-            try { await window.firebase.signInWithPopup(auth, provider); } 
+            try { 
+                // Changed from signInWithPopup to signInWithRedirect
+                await window.firebase.signInWithRedirect(auth, provider); 
+            } 
             catch (error) { console.error("Erro ao fazer login com Google:", error); }
         }
 
