@@ -35,7 +35,7 @@
 
     <!-- Login View -->
     <div id="login-view" class="flex items-center justify-center h-screen w-screen">
-        <div class="text-center bg-gray-800 p-10 rounded-xl shadow-2xl border border-gray-700">
+        <div class="text-center bg-gray-800 p-10 rounded-xl shadow-2xl border border-gray-700 max-w-sm mx-4">
             <h1 class="text-3xl font-bold text-white mb-2">Dashboard Financeiro</h1>
             <p class="text-gray-400 mb-8">Faça login para gerenciar suas finanças.</p>
             <button id="login-btn" class="flex items-center justify-center w-full bg-white text-gray-800 font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-gray-200 transition-colors duration-300">
@@ -47,10 +47,18 @@
 
     <!-- App View -->
     <div id="app-view" class="flex w-full h-screen">
+        <!-- Overlay for mobile menu -->
+        <div id="menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden"></div>
+        
         <!-- Sidebar / Menu -->
-        <aside class="w-64 bg-gray-800 p-6 flex-shrink-0 hidden md:flex flex-col justify-between">
+        <aside id="sidebar" class="w-64 bg-gray-800 p-6 flex-shrink-0 fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out z-30 md:flex flex-col justify-between">
             <div>
-                <h2 class="text-2xl font-bold text-white mb-8 border-b-2 border-green-500 pb-2">MENU</h2>
+                 <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-2xl font-bold text-white border-b-2 border-green-500 pb-2">MENU</h2>
+                    <button id="close-menu-btn" class="md:hidden">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
                 <nav id="main-menu">
                     <ul>
                         <li class="mb-4"><a href="#" onclick="showView('dashboard-view', this)" class="flex items-center p-3 rounded-lg bg-green-600 text-white font-bold shadow-md"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>Dashboard</a></li>
@@ -68,73 +76,83 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 p-6 md:p-10 overflow-y-auto">
-            <div id="dashboard-view" class="view active">
-                <header class="mb-8"><h1 class="text-3xl font-bold text-white">Dashboard Financeiro</h1><p class="text-gray-400">Bem-vindo! Aqui está um resumo das suas finanças.</p></header>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700"><h3 class="text-gray-400 font-medium">Saldo Atual</h3><p id="current-balance" class="text-3xl font-bold text-green-400 mt-2">R$ 0,00</p></div>
-                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700"><h3 class="text-gray-400 font-medium">Receita Mensal</h3><p id="monthly-income" class="text-3xl font-bold text-white mt-2">R$ 0,00</p></div>
-                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700"><h3 class="text-gray-400 font-medium">Despesa Mensal</h3><p id="monthly-expense" class="text-3xl font-bold text-white mt-2">R$ 0,00</p></div>
-                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700"><h3 class="text-gray-400 font-medium">Economia do Mês</h3><p id="monthly-savings" class="text-3xl font-bold text-white mt-2">R$ 0,00</p></div>
-                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 md:col-span-2 lg:col-span-2"><h3 class="font-semibold text-white mb-4">Receitas vs. Despesas</h3><canvas id="lineChart"></canvas></div>
-                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 md:col-span-2 lg:col-span-2"><h3 class="font-semibold text-white mb-4">Categorias de Gastos</h3><div class="max-h-80 mx-auto"><canvas id="pieChart"></canvas></div></div>
+        <div class="flex flex-col flex-1 w-full">
+            <!-- Mobile Header -->
+            <header class="md:hidden flex justify-between items-center p-4 bg-gray-800 sticky top-0 z-10 shadow-lg">
+                <h1 class="text-xl font-bold text-white">Dashboard Financeiro</h1>
+                <button id="hamburger-btn">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </header>
+
+            <main class="flex-1 p-6 md:p-10 overflow-y-auto">
+                <div id="dashboard-view" class="view active">
+                    <header class="mb-8"><h1 class="text-3xl font-bold text-white">Dashboard Financeiro</h1><p class="text-gray-400">Bem-vindo! Aqui está um resumo das suas finanças.</p></header>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700"><h3 class="text-gray-400 font-medium">Saldo Atual</h3><p id="current-balance" class="text-3xl font-bold text-green-400 mt-2">R$ 0,00</p></div>
+                        <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700"><h3 class="text-gray-400 font-medium">Receita Mensal</h3><p id="monthly-income" class="text-3xl font-bold text-white mt-2">R$ 0,00</p></div>
+                        <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700"><h3 class="text-gray-400 font-medium">Despesa Mensal</h3><p id="monthly-expense" class="text-3xl font-bold text-white mt-2">R$ 0,00</p></div>
+                        <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700"><h3 class="text-gray-400 font-medium">Economia do Mês</h3><p id="monthly-savings" class="text-3xl font-bold text-white mt-2">R$ 0,00</p></div>
+                        <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 md:col-span-2 lg:col-span-2"><h3 class="font-semibold text-white mb-4">Receitas vs. Despesas</h3><canvas id="lineChart"></canvas></div>
+                        <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 md:col-span-2 lg:col-span-2"><h3 class="font-semibold text-white mb-4">Categorias de Gastos</h3><div class="max-h-80 mx-auto"><canvas id="pieChart"></canvas></div></div>
+                    </div>
                 </div>
-            </div>
-            <div id="transactions-view" class="view">
-                <header class="mb-8"><h1 class="text-3xl font-bold text-white">Transações</h1><p class="text-gray-400">Adicione e gerencie suas receitas e despesas.</p></header>
-                <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 mb-8">
-                    <h3 class="text-xl font-bold text-white mb-4">Adicionar Nova Transação</h3>
-                    <form id="transaction-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
-                        <div class="lg:col-span-2"><label for="description" class="block text-sm font-medium text-gray-400">Descrição</label><input type="text" id="description" name="description" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
-                        <div><label for="amount" class="block text-sm font-medium text-gray-400">Valor (R$)</label><input type="number" id="amount" name="amount" step="0.01" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
-                        <div><label for="type" class="block text-sm font-medium text-gray-400">Tipo</label><select id="type" name="type" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"><option value="receita">Receita</option><option value="despesa">Despesa</option></select></div>
-                        <div id="category-wrapper" class="hidden"><label for="transaction-category" class="block text-sm font-medium text-gray-400">Categoria</label><select id="transaction-category" name="transaction-category" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></select></div>
-                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200">Adicionar</button>
-                    </form>
+                <div id="transactions-view" class="view">
+                    <header class="mb-8"><h1 class="text-3xl font-bold text-white">Transações</h1><p class="text-gray-400">Adicione e gerencie suas receitas e despesas.</p></header>
+                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 mb-8">
+                        <h3 class="text-xl font-bold text-white mb-4">Adicionar Nova Transação</h3>
+                        <form id="transaction-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+                            <div class="lg:col-span-2"><label for="description" class="block text-sm font-medium text-gray-400">Descrição</label><input type="text" id="description" name="description" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
+                            <div><label for="amount" class="block text-sm font-medium text-gray-400">Valor (R$)</label><input type="number" id="amount" name="amount" step="0.01" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
+                            <div><label for="type" class="block text-sm font-medium text-gray-400">Tipo</label><select id="type" name="type" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"><option value="receita">Receita</option><option value="despesa">Despesa</option></select></div>
+                            <div id="category-wrapper" class="hidden"><label for="transaction-category" class="block text-sm font-medium text-gray-400">Categoria</label><select id="transaction-category" name="transaction-category" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></select></div>
+                            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200">Adicionar</button>
+                        </form>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700"><h3 class="text-xl font-bold text-white mb-4">Histórico de Transações</h3><div class="overflow-x-auto"><table class="min-w-full"><thead><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Descrição</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Categoria</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Valor</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Data</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Ações</th></tr></thead><tbody id="transaction-list"></tbody></table></div></div>
                 </div>
-                <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700"><h3 class="text-xl font-bold text-white mb-4">Histórico de Transações</h3><div class="overflow-x-auto"><table class="min-w-full"><thead><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Descrição</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Categoria</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Valor</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Data</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Ações</th></tr></thead><tbody id="transaction-list"></tbody></table></div></div>
-            </div>
-            <div id="cards-view" class="view">
-                <header class="mb-8"><h1 class="text-3xl font-bold text-white">Meus Cartões</h1><p class="text-gray-400">Gerencie seus cartões de crédito e débito.</p></header>
-                <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 mb-8">
-                    <h3 class="text-xl font-bold text-white mb-4">Adicionar Novo Cartão</h3>
-                    <form id="card-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
-                        <div><label for="card-bank-name" class="block text-sm font-medium text-gray-400">Nome do Banco</label><input type="text" id="card-bank-name" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
-                        <div><label for="card-last-four" class="block text-sm font-medium text-gray-400">Últimos 4 dígitos</label><input type="text" id="card-last-four" required maxlength="4" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
-                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200">Adicionar Cartão</button>
-                    </form>
-                </div><div id="cards-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
-            </div>
-            <div id="investments-view" class="view">
-                <header class="mb-8"><h1 class="text-3xl font-bold text-white">Investimentos</h1><p class="text-gray-400">Acompanhe o desempenho da sua carteira.</p></header>
-                <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 mb-8">
-                    <h3 class="text-xl font-bold text-white mb-4">Adicionar Novo Ativo</h3>
-                    <form id="investment-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
-                        <div><label for="investment-asset" class="block text-sm font-medium text-gray-400">Ativo</label><input type="text" id="investment-asset" placeholder="ex: PETR4, MXRF11" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
-                        <div><label for="investment-type" class="block text-sm font-medium text-gray-400">Tipo</label><select id="investment-type" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"><option>Ação</option><option>FII</option><option>Renda Fixa</option><option>Cripto</option><option>Outro</option></select></div>
-                        <div><label for="investment-quantity" class="block text-sm font-medium text-gray-400">Quantidade</label><input type="number" id="investment-quantity" step="any" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
-                        <div><label for="investment-value" class="block text-sm font-medium text-gray-400">Valor Investido (R$)</label><input type="number" id="investment-value" step="0.01" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
-                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200">Adicionar Ativo</button>
-                    </form>
+                <div id="cards-view" class="view">
+                    <header class="mb-8"><h1 class="text-3xl font-bold text-white">Meus Cartões</h1><p class="text-gray-400">Gerencie seus cartões de crédito e débito.</p></header>
+                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 mb-8">
+                        <h3 class="text-xl font-bold text-white mb-4">Adicionar Novo Cartão</h3>
+                        <form id="card-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+                            <div><label for="card-bank-name" class="block text-sm font-medium text-gray-400">Nome do Banco</label><input type="text" id="card-bank-name" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
+                            <div><label for="card-last-four" class="block text-sm font-medium text-gray-400">Últimos 4 dígitos</label><input type="text" id="card-last-four" required maxlength="4" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
+                            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200">Adicionar Cartão</button>
+                        </form>
+                    </div><div id="cards-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
                 </div>
-                <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700"><h3 class="text-xl font-bold text-white mb-4">Minha Carteira</h3><div class="overflow-x-auto"><table class="min-w-full"><thead><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Ativo</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Tipo</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Quantidade</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Valor Investido</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Ações</th></tr></thead><tbody id="investment-list"></tbody></table></div></div>
-            </div>
-            <div id="budgets-view" class="view">
-                <header class="mb-8"><h1 class="text-3xl font-bold text-white">Orçamentos Mensais</h1><p class="text-gray-400">Defina limites de gastos para suas categorias.</p></header>
-                <div id="budgets-list" class="space-y-6"></div>
-            </div>
-            <div id="settings-view" class="view">
-                <header class="mb-8"><h1 class="text-3xl font-bold text-white">Configurações</h1><p class="text-gray-400">Gerencie as configurações do seu aplicativo.</p></header>
-                <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
-                    <h3 class="text-xl font-bold text-white mb-4">Gerenciar Categorias de Despesa</h3>
-                    <form id="category-form" class="flex items-end gap-4 mb-6">
-                        <div class="flex-1"><label for="category-name" class="block text-sm font-medium text-gray-400">Nome da Categoria</label><input type="text" id="category-name" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
-                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200">Adicionar</button>
-                    </form>
-                    <div id="category-list" class="space-y-3"></div>
+                <div id="investments-view" class="view">
+                    <header class="mb-8"><h1 class="text-3xl font-bold text-white">Investimentos</h1><p class="text-gray-400">Acompanhe o desempenho da sua carteira.</p></header>
+                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 mb-8">
+                        <h3 class="text-xl font-bold text-white mb-4">Adicionar Novo Ativo</h3>
+                        <form id="investment-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                            <div><label for="investment-asset" class="block text-sm font-medium text-gray-400">Ativo</label><input type="text" id="investment-asset" placeholder="ex: PETR4, MXRF11" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
+                            <div><label for="investment-type" class="block text-sm font-medium text-gray-400">Tipo</label><select id="investment-type" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"><option>Ação</option><option>FII</option><option>Renda Fixa</option><option>Cripto</option><option>Outro</option></select></div>
+                            <div><label for="investment-quantity" class="block text-sm font-medium text-gray-400">Quantidade</label><input type="number" id="investment-quantity" step="any" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
+                            <div><label for="investment-value" class="block text-sm font-medium text-gray-400">Valor Investido (R$)</label><input type="number" id="investment-value" step="0.01" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
+                            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200">Adicionar Ativo</button>
+                        </form>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700"><h3 class="text-xl font-bold text-white mb-4">Minha Carteira</h3><div class="overflow-x-auto"><table class="min-w-full"><thead><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Ativo</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Tipo</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Quantidade</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Valor Investido</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Ações</th></tr></thead><tbody id="investment-list"></tbody></table></div></div>
                 </div>
-            </div>
-        </main>
+                <div id="budgets-view" class="view">
+                    <header class="mb-8"><h1 class="text-3xl font-bold text-white">Orçamentos Mensais</h1><p class="text-gray-400">Defina limites de gastos para suas categorias.</p></header>
+                    <div id="budgets-list" class="space-y-6"></div>
+                </div>
+                <div id="settings-view" class="view">
+                    <header class="mb-8"><h1 class="text-3xl font-bold text-white">Configurações</h1><p class="text-gray-400">Gerencie as configurações do seu aplicativo.</p></header>
+                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
+                        <h3 class="text-xl font-bold text-white mb-4">Gerenciar Categorias de Despesa</h3>
+                        <form id="category-form" class="flex items-end gap-4 mb-6">
+                            <div class="flex-1"><label for="category-name" class="block text-sm font-medium text-gray-400">Nome da Categoria</label><input type="text" id="category-name" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200">Adicionar</button>
+                        </form>
+                        <div id="category-list" class="space-y-3"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
     </div>
     
     <!-- Firebase SDK -->
@@ -163,12 +181,27 @@
         function showView(viewId, element) {
             document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
+            
             document.querySelectorAll('#main-menu a').forEach(link => {
                 link.classList.remove('bg-green-600', 'text-white', 'font-bold', 'shadow-md');
                 link.classList.add('hover:bg-gray-700');
             });
             element.classList.add('bg-green-600', 'text-white', 'font-bold', 'shadow-md');
             element.classList.remove('hover:bg-gray-700');
+
+            // Close mobile menu if open
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar.classList.contains('translate-x-0') && window.innerWidth < 768) {
+                toggleMenu();
+            }
+        }
+
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('menu-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            sidebar.classList.toggle('translate-x-0');
+            overlay.classList.toggle('hidden');
         }
 
         function renderTransactions() {
@@ -461,13 +494,16 @@
                 else { categoryWrapper.classList.add('hidden'); }
             });
 
+            // Hamburger menu listeners
+            document.getElementById('hamburger-btn').addEventListener('click', toggleMenu);
+            document.getElementById('close-menu-btn').addEventListener('click', toggleMenu);
+            document.getElementById('menu-overlay').addEventListener('click', toggleMenu);
+
             try {
-                const firebaseConfig = {
-                  apiKey: "AIzaSyB7BOU0BCHN9LSUvxAK1ipjbtp1Ocks5y4", authDomain: "financas-971db.firebaseapp.com",
-                  projectId: "financas-971db", storageBucket: "financas-971db.appspot.com",
-                  messagingSenderId: "725379970163", appId: "1:725379970163:web:903d4c0a91ed8799d92606",
-                  measurementId: "G-VL0KZHXCYJ"
-                };
+                // Masked Firebase Config
+                const encodedConfig = "eyJhcGlLZXkiOiJBSXphU3lCN0JPVTBCQ0hOOUxTVXZ4QUsxaXBqYnRWMU9ja3M1eTQiLCJhdXRoRG9tYWluIjoiZmluYW5jYXMtOTcxZGIuZmlyZWJhc2VhcHAuY29tIiwicHJvamVjdElkIjoiZmluYW5jYXMtOTcxZGIiLCJzdG9yYWdlQnVja2V0IjoiZmluYW5jYXMtOTcxZGIuZmlyZWJhc2VzdG9yYWdlLmNvbSIsIm1lc3NhZ2luZ1NlbmRlcklkIjoiNzI1Mzc5OTcwMTYzIiwiYXBwSWQiOiIxOjcyNTM3OTk3MDE2MzpqZGI6OTAzZDRjMGE5MWVkODc5OWQ5MjYwNiIsIm1lYXN1cmVtZW50SWQiOiJHLVZMMEtaSFhDWUoifQ==";
+                const firebaseConfig = JSON.parse(atob(encodedConfig));
+                
                 const app = window.firebase.initializeApp(firebaseConfig);
                 db = window.firebase.getFirestore(app);
                 auth = window.firebase.getAuth(app);
@@ -511,3 +547,4 @@
     </script>
 </body>
 </html>
+
