@@ -482,7 +482,7 @@
 
         // --- App Initialization ---
 
-        document.addEventListener('DOMContentLoaded', () => {
+        window.onload = () => {
             initializeCharts();
             document.getElementById('transaction-form').addEventListener('submit', addTransaction);
             document.getElementById('card-form').addEventListener('submit', addCard);
@@ -542,7 +542,7 @@
                 console.error("Falha na inicialização do Firebase.", e);
                 document.body.innerHTML = '<div class="text-white text-center p-8">Erro ao conectar com a base de dados. Verifique a configuração do Firebase.</div>';
             }
-        });
+        };
     </script>
 </body>
 </html>
