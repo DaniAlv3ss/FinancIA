@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Financeiro</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Simple transition for view switching */
+        .view {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        .view.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        #app-view { display: none; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200">
+
+    <!-- Login View -->
+    <div id="login-view" class="flex items-center justify-center h-screen w-screen">
+        <div class="text-center bg-gray-800 p-10 rounded-xl shadow-2xl border border-gray-700">
+            <h1 class="text-3xl font-bold text-white mb-2">Dashboard Financeiro</h1>
+            <p class="text-gray-400 mb-8">Faça login para gerenciar suas finanças.</p>
+            <button id="login-btn" class="flex items-center justify-center w-full bg-white text-gray-800 font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-gray-200 transition-colors duration-300">
+                <svg class="w-6 h-6 mr-3" viewBox="0 0 48 48"><defs><path id="a" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></defs><clipPath id="b"><use xlink:href="#a" overflow="visible"/></clipPath><path clip-path="url(#b)" fill="#FBBC05" d="M0 37V11l17 13z"/><path clip-path="url(#b)" fill="#EA4335" d="M0 11l17 13 7-6.1L48 14V0H0z"/><path clip-path="url(#b)" fill="#34A853" d="M0 37l30-23 7.9 1L48 0v48H0z"/><path clip-path="url(#b)" fill="#4285F4" d="M48 48L17 24l-4-3 35-10z"/></svg>
+                Entrar com Google
+            </button>
+        </div>
+    </div>
+
+    <!-- App View -->
+    <div id="app-view" class="flex w-full h-screen">
+        <!-- Sidebar / Menu -->
+        <aside class="w-64 bg-gray-800 p-6 flex-shrink-0 hidden md:flex flex-col justify-between">
+            <div>
+                <h2 class="text-2xl font-bold text-white mb-8 border-b-2 border-green-500 pb-2">MENU</h2>
+                <nav id="main-menu">
+                    <ul>
+                        <li class="mb-4"><a href="#" onclick="showView('dashboard-view', this)" class="flex items-center p-3 rounded-lg bg-green-600 text-white font-bold shadow-md"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>Dashboard</a></li>
+                        <li class="mb-4"><a href="#" onclick="showView('transactions-view', this)" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition-colors duration-200"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>Transações</a></li>
+                        <li class="mb-4"><a href="#" onclick="showView('cards-view', this)" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition-colors duration-200"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H4a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>Cartões</a></li>
+                        <li class="mb-4"><a href="#" onclick="showView('investments-view', this)" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition-colors duration-200"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>Investimentos</a></li>
+                        <li class="mb-4"><a href="#" onclick="showView('budgets-view', this)" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition-colors duration-200"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>Orçamentos</a></li>
+                        <li class="mb-4"><a href="#" onclick="showView('settings-view', this)" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition-colors duration-200"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>Configurações</a></li>
+                    </ul>
+                </nav>
+            </div>
+            <div id="user-profile" class="border-t border-gray-700 pt-4">
+                 <!-- User info injected here -->
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6 md:p-10 overflow-y-auto">
+            <div id="dashboard-view" class="view active">
+                <header class="mb-8"><h1 class="text-3xl font-bold text-white">Dashboard Financeiro</h1><p class="text-gray-400">Bem-vindo! Aqui está um resumo das suas finanças.</p></header>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700"><h3 class="text-gray-400 font-medium">Saldo Atual</h3><p id="current-balance" class="text-3xl font-bold text-green-400 mt-2">R$ 0,00</p></div>
+                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700"><h3 class="text-gray-400 font-medium">Receita Mensal</h3><p id="monthly-income" class="text-3xl font-bold text-white mt-2">R$ 0,00</p></div>
+                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700"><h3 class="text-gray-400 font-medium">Despesa Mensal</h3><p id="monthly-expense" class="text-3xl font-bold text-white mt-2">R$ 0,00</p></div>
+                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700"><h3 class="text-gray-400 font-medium">Economia do Mês</h3><p id="monthly-savings" class="text-3xl font-bold text-white mt-2">R$ 0,00</p></div>
+                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 md:col-span-2 lg:col-span-2"><h3 class="font-semibold text-white mb-4">Receitas vs. Despesas</h3><canvas id="lineChart"></canvas></div>
+                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 md:col-span-2 lg:col-span-2"><h3 class="font-semibold text-white mb-4">Categorias de Gastos</h3><div class="max-h-80 mx-auto"><canvas id="pieChart"></canvas></div></div>
+                </div>
+            </div>
+            <div id="transactions-view" class="view">
+                <header class="mb-8"><h1 class="text-3xl font-bold text-white">Transações</h1><p class="text-gray-400">Adicione e gerencie suas receitas e despesas.</p></header>
+                <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 mb-8">
+                    <h3 class="text-xl font-bold text-white mb-4">Adicionar Nova Transação</h3>
+                    <form id="transaction-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+                        <div class="lg:col-span-2"><label for="description" class="block text-sm font-medium text-gray-400">Descrição</label><input type="text" id="description" name="description" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
+                        <div><label for="amount" class="block text-sm font-medium text-gray-400">Valor (R$)</label><input type="number" id="amount" name="amount" step="0.01" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
+                        <div><label for="type" class="block text-sm font-medium text-gray-400">Tipo</label><select id="type" name="type" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"><option value="receita">Receita</option><option value="despesa">Despesa</option></select></div>
+                        <div id="category-wrapper" class="hidden"><label for="transaction-category" class="block text-sm font-medium text-gray-400">Categoria</label><select id="transaction-category" name="transaction-category" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></select></div>
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200">Adicionar</button>
+                    </form>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700"><h3 class="text-xl font-bold text-white mb-4">Histórico de Transações</h3><div class="overflow-x-auto"><table class="min-w-full"><thead><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Descrição</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Categoria</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Valor</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Data</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Ações</th></tr></thead><tbody id="transaction-list"></tbody></table></div></div>
+            </div>
+            <div id="cards-view" class="view">
+                <header class="mb-8"><h1 class="text-3xl font-bold text-white">Meus Cartões</h1><p class="text-gray-400">Gerencie seus cartões de crédito e débito.</p></header>
+                <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 mb-8">
+                    <h3 class="text-xl font-bold text-white mb-4">Adicionar Novo Cartão</h3>
+                    <form id="card-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+                        <div><label for="card-bank-name" class="block text-sm font-medium text-gray-400">Nome do Banco</label><input type="text" id="card-bank-name" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
+                        <div><label for="card-last-four" class="block text-sm font-medium text-gray-400">Últimos 4 dígitos</label><input type="text" id="card-last-four" required maxlength="4" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200">Adicionar Cartão</button>
+                    </form>
+                </div><div id="cards-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+            </div>
+            <div id="investments-view" class="view">
+                <header class="mb-8"><h1 class="text-3xl font-bold text-white">Investimentos</h1><p class="text-gray-400">Acompanhe o desempenho da sua carteira.</p></header>
+                <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 mb-8">
+                    <h3 class="text-xl font-bold text-white mb-4">Adicionar Novo Ativo</h3>
+                    <form id="investment-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                        <div><label for="investment-asset" class="block text-sm font-medium text-gray-400">Ativo</label><input type="text" id="investment-asset" placeholder="ex: PETR4, MXRF11" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
+                        <div><label for="investment-type" class="block text-sm font-medium text-gray-400">Tipo</label><select id="investment-type" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"><option>Ação</option><option>FII</option><option>Renda Fixa</option><option>Cripto</option><option>Outro</option></select></div>
+                        <div><label for="investment-quantity" class="block text-sm font-medium text-gray-400">Quantidade</label><input type="number" id="investment-quantity" step="any" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
+                        <div><label for="investment-value" class="block text-sm font-medium text-gray-400">Valor Investido (R$)</label><input type="number" id="investment-value" step="0.01" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200">Adicionar Ativo</button>
+                    </form>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700"><h3 class="text-xl font-bold text-white mb-4">Minha Carteira</h3><div class="overflow-x-auto"><table class="min-w-full"><thead><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Ativo</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Tipo</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Quantidade</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Valor Investido</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Ações</th></tr></thead><tbody id="investment-list"></tbody></table></div></div>
+            </div>
+            <div id="budgets-view" class="view">
+                <header class="mb-8"><h1 class="text-3xl font-bold text-white">Orçamentos Mensais</h1><p class="text-gray-400">Defina limites de gastos para suas categorias.</p></header>
+                <div id="budgets-list" class="space-y-6"></div>
+            </div>
+            <div id="settings-view" class="view">
+                <header class="mb-8"><h1 class="text-3xl font-bold text-white">Configurações</h1><p class="text-gray-400">Gerencie as configurações do seu aplicativo.</p></header>
+                <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
+                    <h3 class="text-xl font-bold text-white mb-4">Gerenciar Categorias de Despesa</h3>
+                    <form id="category-form" class="flex items-end gap-4 mb-6">
+                        <div class="flex-1"><label for="category-name" class="block text-sm font-medium text-gray-400">Nome da Categoria</label><input type="text" id="category-name" required class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-green-500 focus:border-green-500"></div>
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200">Adicionar</button>
+                    </form>
+                    <div id="category-list" class="space-y-3"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, addDoc, deleteDoc, onSnapshot, collection, setDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        window.firebase = {
+            initializeApp,
+            getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut,
+            getFirestore, doc, addDoc, deleteDoc, onSnapshot, collection, setDoc, setLogLevel
+        };
+    </script>
+
+    <script>
+        // App State
+        let transactions = [], cards = [], investments = [], categories = [], budgets = {};
+        let lineChart, pieChart;
+        let db, auth, userId, appId;
+        let unsubTransactions, unsubCards, unsubInvestments, unsubCategories, unsubBudgets;
+
+        // Functions
+        function formatCurrency(value) { return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+        
+        function showView(viewId, element) {
+            document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            document.querySelectorAll('#main-menu a').forEach(link => {
+                link.classList.remove('bg-green-600', 'text-white', 'font-bold', 'shadow-md');
+                link.classList.add('hover:bg-gray-700');
+            });
+            element.classList.add('bg-green-600', 'text-white', 'font-bold', 'shadow-md');
+            element.classList.remove('hover:bg-gray-700');
+        }
+
+        function renderTransactions() {
+            const list = document.getElementById('transaction-list');
+            list.innerHTML = '';
+            if (!transactions.length) {
+                list.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500">Nenhuma transação encontrada.</td></tr>`;
+                return;
+            }
+            const sorted = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+            sorted.forEach(t => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-700';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">${t.description}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-400">${t.categoryName || 'N/A'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap font-medium ${t.type === 'receita' ? 'text-green-400' : 'text-red-400'}">${formatCurrency(t.amount)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-400">${new Date(t.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right">
+                        <button onclick="deleteTransaction('${t.id}')" class="text-red-500 hover:text-red-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </td>
+                `;
+                list.appendChild(row);
+            });
+        }
+
+        async function addTransaction(event) {
+            event.preventDefault(); if (!userId) return;
+            const form = event.target;
+            const type = form.type.value;
+            const newTransaction = {
+                description: form.description.value, amount: parseFloat(form.amount.value),
+                type: type, date: new Date().toISOString().split('T')[0], categoryName: ''
+            };
+            if(type === 'despesa') {
+                const select = form['transaction-category'];
+                if (select.value) { newTransaction.categoryName = select.options[select.selectedIndex].text; } 
+                else { alert('Por favor, selecione uma categoria para a despesa.'); return; }
+            }
+            try {
+                const collectionPath = `/artifacts/${appId}/users/${userId}/transactions`;
+                await window.firebase.addDoc(window.firebase.collection(db, collectionPath), newTransaction);
+                form.reset();
+                document.getElementById('category-wrapper').classList.add('hidden');
+            } catch (error) { console.error("Error adding transaction: ", error); }
+        }
+
+        async function deleteTransaction(id) {
+            if (!userId) return;
+            try { await window.firebase.deleteDoc(window.firebase.doc(db, `/artifacts/${appId}/users/${userId}/transactions/${id}`)); } 
+            catch (error) { console.error("Error removing transaction: ", error); }
+        }
+        
+        function renderCards() {
+            const list = document.getElementById('cards-list');
+            list.innerHTML = '';
+            if (!cards.length) {
+                list.innerHTML = `<p class="text-gray-500 md:col-span-2 text-center">Nenhum cartão adicionado.</p>`;
+                return;
+            }
+            cards.forEach(card => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'bg-gradient-to-tr from-green-700 to-green-500 p-6 rounded-xl shadow-lg text-white relative';
+                cardEl.innerHTML = `
+                    <button onclick="deleteCard('${card.id}')" class="absolute top-4 right-4 text-white opacity-60 hover:opacity-100"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                    <div class="flex justify-between items-center mb-4"><span class="font-bold text-xl">${card.bankName}</span><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H4a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg></div>
+                    <p class="text-2xl font-mono tracking-wider mb-4">**** **** **** ${card.lastFour}</p>
+                    <div class="flex justify-between"><div><p class="text-xs">Titular</p><p class="font-medium">Seu Nome</p></div></div>
+                `;
+                list.appendChild(cardEl);
+            });
+        }
+
+        async function addCard(event) {
+            event.preventDefault(); if (!userId) return;
+            const form = event.target;
+            try {
+                await window.firebase.addDoc(window.firebase.collection(db, `/artifacts/${appId}/users/${userId}/cards`), {
+                    bankName: form['card-bank-name'].value, lastFour: form['card-last-four'].value,
+                });
+                form.reset();
+            } catch (error) { console.error("Error adding card: ", error); }
+        }
+
+        async function deleteCard(id) {
+            if (!userId) return;
+            try { await window.firebase.deleteDoc(window.firebase.doc(db, `/artifacts/${appId}/users/${userId}/cards/${id}`));} 
+            catch (error) { console.error("Error removing card: ", error); }
+        }
+
+        function renderInvestments() {
+            const list = document.getElementById('investment-list');
+            list.innerHTML = '';
+            if (!investments.length) {
+                list.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500">Nenhum investimento adicionado.</td></tr>`;
+                return;
+            }
+            investments.forEach(inv => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-700';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap font-bold">${inv.asset}</td><td class="px-6 py-4 whitespace-nowrap">${inv.type}</td><td class="px-6 py-4 whitespace-nowrap">${inv.quantity}</td><td class="px-6 py-4 whitespace-nowrap">${formatCurrency(inv.value)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right">
+                        <button onclick="deleteInvestment('${inv.id}')" class="text-red-500 hover:text-red-700"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                    </td>`;
+                list.appendChild(row);
+            });
+        }
+        
+        async function addInvestment(event) {
+            event.preventDefault(); if (!userId) return;
+            const form = event.target;
+            try {
+                await window.firebase.addDoc(window.firebase.collection(db, `/artifacts/${appId}/users/${userId}/investments`), {
+                    asset: form['investment-asset'].value, type: form['investment-type'].value,
+                    quantity: parseFloat(form['investment-quantity'].value), value: parseFloat(form['investment-value'].value),
+                });
+                form.reset();
+            } catch (error) { console.error("Error adding investment: ", error); }
+        }
+
+        async function deleteInvestment(id) {
+            if (!userId) return;
+            try { await window.firebase.deleteDoc(window.firebase.doc(db, `/artifacts/${appId}/users/${userId}/investments/${id}`));} 
+            catch (error) { console.error("Error removing investment: ", error); }
+        }
+
+        function renderCategories() {
+            const list = document.getElementById('category-list');
+            const dropdown = document.getElementById('transaction-category');
+            list.innerHTML = '';
+            dropdown.innerHTML = '<option value="">Selecione uma categoria</option>';
+            if (!categories.length) { list.innerHTML = `<p class="text-gray-500 text-center">Nenhuma categoria adicionada.</p>`; } 
+            else {
+                 categories.forEach(cat => {
+                    const catEl = document.createElement('div');
+                    catEl.className = 'flex justify-between items-center bg-gray-700 p-3 rounded-lg';
+                    catEl.innerHTML = `<span>${cat.name}</span> <button onclick="deleteCategory('${cat.id}')" class="text-red-500 hover:text-red-700">&times;</button>`;
+                    list.appendChild(catEl);
+                    const optionEl = document.createElement('option');
+                    optionEl.value = cat.id;
+                    optionEl.textContent = cat.name;
+                    dropdown.appendChild(optionEl);
+                });
+            }
+            renderBudgets();
+        }
+
+        async function addCategory(event) {
+            event.preventDefault(); if (!userId) return;
+            const form = event.target;
+            const name = form['category-name'].value;
+            try {
+                await window.firebase.addDoc(window.firebase.collection(db, `/artifacts/${appId}/users/${userId}/categories`), { name });
+                form.reset();
+            } catch (error) { console.error("Error adding category: ", error); }
+        }
+
+        async function deleteCategory(id) {
+            if (!userId) return;
+            try { await window.firebase.deleteDoc(window.firebase.doc(db, `/artifacts/${appId}/users/${userId}/categories/${id}`));} 
+            catch (error) { console.error("Error removing category: ", error); }
+        }
+        
+        function renderBudgets() {
+            const list = document.getElementById('budgets-list');
+            list.innerHTML = '';
+            if (!categories.length) {
+                list.innerHTML = '<p class="text-gray-500 text-center">Adicione categorias nas Configurações para criar orçamentos.</p>';
+                return;
+            }
+            const expensesThisMonth = transactions.filter(t => {
+                const date = new Date(t.date); const today = new Date();
+                return t.type === 'despesa' && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
+            });
+            categories.forEach(cat => {
+                const budgetAmount = budgets[cat.id] || 0;
+                const spentAmount = expensesThisMonth.filter(t => t.categoryName === cat.name).reduce((sum, t) => sum + t.amount, 0);
+                const percentage = budgetAmount > 0 ? (spentAmount / budgetAmount) * 100 : 0;
+                const budgetEl = document.createElement('div');
+                budgetEl.className = 'bg-gray-800 p-4 rounded-lg';
+                budgetEl.innerHTML = `
+                    <div class="flex justify-between items-center mb-2"><span class="font-bold">${cat.name}</span><span class="text-sm text-gray-400">${formatCurrency(spentAmount)} / ${formatCurrency(budgetAmount)}</span></div>
+                    <div class="w-full bg-gray-700 rounded-full h-2.5"><div class="bg-green-600 h-2.5 rounded-full" style="width: ${Math.min(percentage, 100)}%"></div></div>
+                    <div class="mt-2"><input type="number" value="${budgetAmount}" onchange="updateBudget('${cat.id}', this.value)" placeholder="Definir Orçamento" class="w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white text-sm p-1 focus:ring-green-500 focus:border-green-500"></div>`;
+                list.appendChild(budgetEl);
+            });
+        }
+
+        async function updateBudget(categoryId, amount) {
+            if (!userId) return;
+            const newAmount = parseFloat(amount) || 0;
+            budgets[categoryId] = newAmount;
+            try { await window.firebase.setDoc(window.firebase.doc(db, `/artifacts/${appId}/users/${userId}/budgets/all`), budgets); } 
+            catch (error) { console.error("Error updating budget:", error); }
+        }
+
+        function unsubscribeAll() {
+            if (unsubTransactions) unsubTransactions(); if (unsubCards) unsubCards();
+            if (unsubInvestments) unsubInvestments(); if (unsubCategories) unsubCategories();
+            if (unsubBudgets) unsubBudgets();
+        }
+
+        function listenForFirebaseData() {
+            unsubscribeAll();
+            const commonErrorHandler = (name) => (error) => console.error(`${name} listener error: `, error);
+            unsubTransactions = window.firebase.onSnapshot(window.firebase.collection(db, `/artifacts/${appId}/users/${userId}/transactions`), (snap) => {
+                transactions = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderTransactions(); updateDashboard(); renderBudgets();
+            }, commonErrorHandler('Transaction'));
+            unsubCards = window.firebase.onSnapshot(window.firebase.collection(db, `/artifacts/${appId}/users/${userId}/cards`), (snap) => {
+                cards = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderCards();
+            }, commonErrorHandler('Card'));
+            unsubInvestments = window.firebase.onSnapshot(window.firebase.collection(db, `/artifacts/${appId}/users/${userId}/investments`), (snap) => {
+                investments = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderInvestments();
+            }, commonErrorHandler('Investment'));
+            unsubCategories = window.firebase.onSnapshot(window.firebase.collection(db, `/artifacts/${appId}/users/${userId}/categories`), (snap) => {
+                categories = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => a.name.localeCompare(b.name));
+                renderCategories();
+            }, commonErrorHandler('Category'));
+            unsubBudgets = window.firebase.onSnapshot(window.firebase.doc(db, `/artifacts/${appId}/users/${userId}/budgets/all`), (doc) => {
+                budgets = doc.exists() ? doc.data() : {};
+                renderBudgets();
+            }, commonErrorHandler('Budget'));
+        }
+
+        function updateDashboard() {
+            const totalIncome = transactions.filter(t => t.type === 'receita').reduce((sum, t) => sum + t.amount, 0);
+            const totalExpense = transactions.filter(t => t.type === 'despesa').reduce((sum, t) => sum + t.amount, 0);
+            const balance = totalIncome - totalExpense;
+            document.getElementById('current-balance').textContent = formatCurrency(balance);
+            document.getElementById('monthly-income').textContent = formatCurrency(totalIncome);
+            document.getElementById('monthly-expense').textContent = formatCurrency(totalExpense);
+            document.getElementById('monthly-savings').textContent = formatCurrency(balance > 0 ? balance : 0);
+            updateLineChart(); updatePieChart();
+        }
+
+        function updateLineChart() {
+            const sorted = [...transactions].sort((a,b) => new Date(a.date) - new Date(b.date));
+            const labels = [...new Set(sorted.map(t => new Date(t.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})))];
+            const incomeData = labels.map(label => sorted.filter(t => new Date(t.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) === label && t.type === 'receita').reduce((sum, t) => sum + t.amount, 0));
+            const expenseData = labels.map(label => sorted.filter(t => new Date(t.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) === label && t.type === 'despesa').reduce((sum, t) => sum + t.amount, 0));
+            lineChart.data.labels = labels;
+            lineChart.data.datasets[0].data = incomeData;
+            lineChart.data.datasets[1].data = expenseData;
+            lineChart.update();
+        }
+        
+        function updatePieChart() {
+            const expenseByCategory = transactions.filter(t => t.type === 'despesa' && t.categoryName)
+                .reduce((acc, t) => { acc[t.categoryName] = (acc[t.categoryName] || 0) + t.amount; return acc; }, {});
+            pieChart.data.labels = Object.keys(expenseByCategory);
+            pieChart.data.datasets[0].data = Object.values(expenseByCategory);
+            pieChart.update();
+        }
+        
+        function initializeCharts() {
+            Chart.defaults.color = 'rgba(209, 213, 219, 0.7)'; Chart.defaults.borderColor = 'rgba(107, 114, 128, 0.3)';
+            const lineCtx = document.getElementById('lineChart').getContext('2d');
+            lineChart = new Chart(lineCtx, { type: 'line', data: { labels: [], datasets: [ { label: 'Receitas', data: [], borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', borderWidth: 2, fill: true, tension: 0.4 }, { label: 'Despesas', data: [], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 2, fill: true, tension: 0.4 } ] }, options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(107, 114, 128, 0.1)' } }, x: { grid: { display: false } } } } });
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            pieChart = new Chart(pieCtx, { type: 'doughnut', data: { labels: [], datasets: [{ data: [], backgroundColor: ['#166534', '#15803d', '#16a34a', '#22c55e', '#4ade80', '#86efac', '#bbf7d0'], borderColor: '#1f2937', borderWidth: 3, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 20, padding: 15 } } } } });
+        }
+        
+        async function signInWithGoogle() {
+            const provider = new window.firebase.GoogleAuthProvider();
+            try { await window.firebase.signInWithPopup(auth, provider); } 
+            catch (error) { console.error("Erro ao fazer login com Google:", error); }
+        }
+
+        async function signOutUser() {
+            try { await window.firebase.signOut(auth); } 
+            catch (error) { console.error("Erro ao fazer logout:", error); }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeCharts();
+            document.getElementById('transaction-form').addEventListener('submit', addTransaction);
+            document.getElementById('card-form').addEventListener('submit', addCard);
+            document.getElementById('investment-form').addEventListener('submit', addInvestment);
+            document.getElementById('category-form').addEventListener('submit', addCategory);
+            document.getElementById('login-btn').addEventListener('click', signInWithGoogle);
+            document.getElementById('type').addEventListener('change', (e) => {
+                const categoryWrapper = document.getElementById('category-wrapper');
+                if (e.target.value === 'despesa') { categoryWrapper.classList.remove('hidden'); } 
+                else { categoryWrapper.classList.add('hidden'); }
+            });
+
+            try {
+                const firebaseConfig = {
+                  apiKey: "AIzaSyB7BOU0BCHN9LSUvxAK1ipjbtp1Ocks5y4", authDomain: "financas-971db.firebaseapp.com",
+                  projectId: "financas-971db", storageBucket: "financas-971db.appspot.com",
+                  messagingSenderId: "725379970163", appId: "1:725379970163:web:903d4c0a91ed8799d92606",
+                  measurementId: "G-VL0KZHXCYJ"
+                };
+                const app = window.firebase.initializeApp(firebaseConfig);
+                db = window.firebase.getFirestore(app);
+                auth = window.firebase.getAuth(app);
+                appId = firebaseConfig.projectId;
+                
+                window.firebase.onAuthStateChanged(auth, (user) => {
+                    const loginView = document.getElementById('login-view');
+                    const appView = document.getElementById('app-view');
+                    const userProfileDiv = document.getElementById('user-profile');
+
+                    if (user) { 
+                        userId = user.uid; 
+                        loginView.style.display = 'none';
+                        appView.style.display = 'flex';
+
+                        userProfileDiv.innerHTML = `
+                            <div class="flex items-center space-x-3">
+                                <img src="${user.photoURL}" alt="Foto do Perfil" class="w-12 h-12 rounded-full">
+                                <div>
+                                    <p class="font-semibold text-white">${user.displayName}</p>
+                                    <button id="logout-btn" class="text-sm text-red-400 hover:underline">Sair</button>
+                                </div>
+                            </div>
+                        `;
+                        document.getElementById('logout-btn').addEventListener('click', signOutUser);
+
+                        listenForFirebaseData(); 
+                    } else {
+                        userId = null;
+                        loginView.style.display = 'flex';
+                        appView.style.display = 'none';
+                        userProfileDiv.innerHTML = '';
+                        unsubscribeAll();
+                    }
+                });
+            } catch (e) {
+                console.error("Falha na inicialização do Firebase.", e);
+                document.body.innerHTML = '<div class="text-white text-center p-8">Erro ao conectar com a base de dados. Verifique a configuração do Firebase.</div>';
+            }
+        });
+    </script>
+</body>
+</html>
+
