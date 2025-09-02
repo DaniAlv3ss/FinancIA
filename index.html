@@ -155,30 +155,32 @@
         </div>
     </div>
     
-    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithRedirect, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, addDoc, deleteDoc, onSnapshot, collection, setDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, addDoc, deleteDoc, onSnapshot, collection, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        window.firebase = {
-            initializeApp,
-            getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithRedirect, signOut,
-            getFirestore, doc, addDoc, deleteDoc, onSnapshot, collection, setDoc, setLogLevel
-        };
-    </script>
-
-    <script>
         // App State
         let transactions = [], cards = [], investments = [], categories = [], budgets = {};
         let lineChart, pieChart;
         let db, auth, userId, appId;
         let unsubTransactions, unsubCards, unsubInvestments, unsubCategories, unsubBudgets;
 
-        // Functions
-        function formatCurrency(value) { return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+        // --- Functions ---
         
-        function showView(viewId, element) {
+        const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        
+        const toggleMenu = () => {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('menu-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            sidebar.classList.toggle('translate-x-0');
+            overlay.classList.toggle('hidden');
+        };
+
+        // --- Functions exposed to window for HTML onclick handlers ---
+        
+        window.showView = (viewId, element) => {
             document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
             
@@ -189,21 +191,45 @@
             element.classList.add('bg-green-600', 'text-white', 'font-bold', 'shadow-md');
             element.classList.remove('hover:bg-gray-700');
 
-            // Close mobile menu if open
-            const sidebar = document.getElementById('sidebar');
-            if (sidebar.classList.contains('translate-x-0') && window.innerWidth < 768) {
+            if (window.innerWidth < 768) {
                 toggleMenu();
             }
-        }
+        };
 
-        function toggleMenu() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('menu-overlay');
-            sidebar.classList.toggle('-translate-x-full');
-            sidebar.classList.toggle('translate-x-0');
-            overlay.classList.toggle('hidden');
-        }
+        window.deleteTransaction = async (id) => {
+            if (!userId) return;
+            try { await deleteDoc(doc(db, `/artifacts/${appId}/users/${userId}/transactions/${id}`)); } 
+            catch (error) { console.error("Error removing transaction: ", error); }
+        };
 
+        window.deleteCard = async (id) => {
+            if (!userId) return;
+            try { await deleteDoc(doc(db, `/artifacts/${appId}/users/${userId}/cards/${id}`));} 
+            catch (error) { console.error("Error removing card: ", error); }
+        };
+
+        window.deleteInvestment = async (id) => {
+            if (!userId) return;
+            try { await deleteDoc(doc(db, `/artifacts/${appId}/users/${userId}/investments/${id}`));} 
+            catch (error) { console.error("Error removing investment: ", error); }
+        };
+
+        window.deleteCategory = async (id) => {
+            if (!userId) return;
+            try { await deleteDoc(doc(db, `/artifacts/${appId}/users/${userId}/categories/${id}`));} 
+            catch (error) { console.error("Error removing category: ", error); }
+        };
+
+        window.updateBudget = async (categoryId, amount) => {
+            if (!userId) return;
+            const newAmount = parseFloat(amount) || 0;
+            budgets[categoryId] = newAmount;
+            try { await setDoc(doc(db, `/artifacts/${appId}/users/${userId}/budgets/all`), budgets); } 
+            catch (error) { console.error("Error updating budget:", error); }
+        };
+        
+        // --- Render Functions ---
+        
         function renderTransactions() {
             const list = document.getElementById('transaction-list');
             list.innerHTML = '';
@@ -244,19 +270,12 @@
                 else { alert('Por favor, selecione uma categoria para a despesa.'); return; }
             }
             try {
-                const collectionPath = `/artifacts/${appId}/users/${userId}/transactions`;
-                await window.firebase.addDoc(window.firebase.collection(db, collectionPath), newTransaction);
+                await addDoc(collection(db, `/artifacts/${appId}/users/${userId}/transactions`), newTransaction);
                 form.reset();
                 document.getElementById('category-wrapper').classList.add('hidden');
             } catch (error) { console.error("Error adding transaction: ", error); }
         }
 
-        async function deleteTransaction(id) {
-            if (!userId) return;
-            try { await window.firebase.deleteDoc(window.firebase.doc(db, `/artifacts/${appId}/users/${userId}/transactions/${id}`)); } 
-            catch (error) { console.error("Error removing transaction: ", error); }
-        }
-        
         function renderCards() {
             const list = document.getElementById('cards-list');
             list.innerHTML = '';
@@ -281,19 +300,13 @@
             event.preventDefault(); if (!userId) return;
             const form = event.target;
             try {
-                await window.firebase.addDoc(window.firebase.collection(db, `/artifacts/${appId}/users/${userId}/cards`), {
+                await addDoc(collection(db, `/artifacts/${appId}/users/${userId}/cards`), {
                     bankName: form['card-bank-name'].value, lastFour: form['card-last-four'].value,
                 });
                 form.reset();
             } catch (error) { console.error("Error adding card: ", error); }
         }
-
-        async function deleteCard(id) {
-            if (!userId) return;
-            try { await window.firebase.deleteDoc(window.firebase.doc(db, `/artifacts/${appId}/users/${userId}/cards/${id}`));} 
-            catch (error) { console.error("Error removing card: ", error); }
-        }
-
+        
         function renderInvestments() {
             const list = document.getElementById('investment-list');
             list.innerHTML = '';
@@ -317,18 +330,12 @@
             event.preventDefault(); if (!userId) return;
             const form = event.target;
             try {
-                await window.firebase.addDoc(window.firebase.collection(db, `/artifacts/${appId}/users/${userId}/investments`), {
+                await addDoc(collection(db, `/artifacts/${appId}/users/${userId}/investments`), {
                     asset: form['investment-asset'].value, type: form['investment-type'].value,
                     quantity: parseFloat(form['investment-quantity'].value), value: parseFloat(form['investment-value'].value),
                 });
                 form.reset();
             } catch (error) { console.error("Error adding investment: ", error); }
-        }
-
-        async function deleteInvestment(id) {
-            if (!userId) return;
-            try { await window.firebase.deleteDoc(window.firebase.doc(db, `/artifacts/${appId}/users/${userId}/investments/${id}`));} 
-            catch (error) { console.error("Error removing investment: ", error); }
         }
 
         function renderCategories() {
@@ -357,15 +364,9 @@
             const form = event.target;
             const name = form['category-name'].value;
             try {
-                await window.firebase.addDoc(window.firebase.collection(db, `/artifacts/${appId}/users/${userId}/categories`), { name });
+                await addDoc(collection(db, `/artifacts/${appId}/users/${userId}/categories`), { name });
                 form.reset();
             } catch (error) { console.error("Error adding category: ", error); }
-        }
-
-        async function deleteCategory(id) {
-            if (!userId) return;
-            try { await window.firebase.deleteDoc(window.firebase.doc(db, `/artifacts/${appId}/users/${userId}/categories/${id}`));} 
-            catch (error) { console.error("Error removing category: ", error); }
         }
         
         function renderBudgets() {
@@ -392,14 +393,8 @@
                 list.appendChild(budgetEl);
             });
         }
-
-        async function updateBudget(categoryId, amount) {
-            if (!userId) return;
-            const newAmount = parseFloat(amount) || 0;
-            budgets[categoryId] = newAmount;
-            try { await window.firebase.setDoc(window.firebase.doc(db, `/artifacts/${appId}/users/${userId}/budgets/all`), budgets); } 
-            catch (error) { console.error("Error updating budget:", error); }
-        }
+        
+        // --- Data & Auth Logic ---
 
         function unsubscribeAll() {
             if (unsubTransactions) unsubTransactions(); if (unsubCards) unsubCards();
@@ -410,23 +405,23 @@
         function listenForFirebaseData() {
             unsubscribeAll();
             const commonErrorHandler = (name) => (error) => console.error(`${name} listener error: `, error);
-            unsubTransactions = window.firebase.onSnapshot(window.firebase.collection(db, `/artifacts/${appId}/users/${userId}/transactions`), (snap) => {
+            unsubTransactions = onSnapshot(collection(db, `/artifacts/${appId}/users/${userId}/transactions`), (snap) => {
                 transactions = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderTransactions(); updateDashboard(); renderBudgets();
             }, commonErrorHandler('Transaction'));
-            unsubCards = window.firebase.onSnapshot(window.firebase.collection(db, `/artifacts/${appId}/users/${userId}/cards`), (snap) => {
+            unsubCards = onSnapshot(collection(db, `/artifacts/${appId}/users/${userId}/cards`), (snap) => {
                 cards = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderCards();
             }, commonErrorHandler('Card'));
-            unsubInvestments = window.firebase.onSnapshot(window.firebase.collection(db, `/artifacts/${appId}/users/${userId}/investments`), (snap) => {
+            unsubInvestments = onSnapshot(collection(db, `/artifacts/${appId}/users/${userId}/investments`), (snap) => {
                 investments = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderInvestments();
             }, commonErrorHandler('Investment'));
-            unsubCategories = window.firebase.onSnapshot(window.firebase.collection(db, `/artifacts/${appId}/users/${userId}/categories`), (snap) => {
+            unsubCategories = onSnapshot(collection(db, `/artifacts/${appId}/users/${userId}/categories`), (snap) => {
                 categories = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => a.name.localeCompare(b.name));
                 renderCategories();
             }, commonErrorHandler('Category'));
-            unsubBudgets = window.firebase.onSnapshot(window.firebase.doc(db, `/artifacts/${appId}/users/${userId}/budgets/all`), (doc) => {
+            unsubBudgets = onSnapshot(doc(db, `/artifacts/${appId}/users/${userId}/budgets/all`), (doc) => {
                 budgets = doc.exists() ? doc.data() : {};
                 renderBudgets();
             }, commonErrorHandler('Budget'));
@@ -444,6 +439,7 @@
         }
 
         function updateLineChart() {
+            if (!lineChart) return;
             const sorted = [...transactions].sort((a,b) => new Date(a.date) - new Date(b.date));
             const labels = [...new Set(sorted.map(t => new Date(t.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})))];
             const incomeData = labels.map(label => sorted.filter(t => new Date(t.date).toLocaleDateString('pt-BR', {timeZone: 'UTC'}) === label && t.type === 'receita').reduce((sum, t) => sum + t.amount, 0));
@@ -455,6 +451,7 @@
         }
         
         function updatePieChart() {
+            if (!pieChart) return;
             const expenseByCategory = transactions.filter(t => t.type === 'despesa' && t.categoryName)
                 .reduce((acc, t) => { acc[t.categoryName] = (acc[t.categoryName] || 0) + t.amount; return acc; }, {});
             pieChart.data.labels = Object.keys(expenseByCategory);
@@ -471,18 +468,19 @@
         }
         
         async function signInWithGoogle() {
-            const provider = new window.firebase.GoogleAuthProvider();
+            const provider = new GoogleAuthProvider();
             try { 
-                // Changed from signInWithPopup to signInWithRedirect
-                await window.firebase.signInWithRedirect(auth, provider); 
+                await signInWithRedirect(auth, provider); 
             } 
             catch (error) { console.error("Erro ao fazer login com Google:", error); }
         }
 
         async function signOutUser() {
-            try { await window.firebase.signOut(auth); } 
+            try { await signOut(auth); } 
             catch (error) { console.error("Erro ao fazer logout:", error); }
         }
+
+        // --- App Initialization ---
 
         document.addEventListener('DOMContentLoaded', () => {
             initializeCharts();
@@ -497,22 +495,20 @@
                 else { categoryWrapper.classList.add('hidden'); }
             });
 
-            // Hamburger menu listeners
             document.getElementById('hamburger-btn').addEventListener('click', toggleMenu);
             document.getElementById('close-menu-btn').addEventListener('click', toggleMenu);
             document.getElementById('menu-overlay').addEventListener('click', toggleMenu);
 
             try {
-                // Masked Firebase Config
                 const encodedConfig = "eyJhcGlLZXkiOiJBSXphU3lCN0JPVTBCQ0hOOUxTVXZ4QUsxaXBqYnRWMU9ja3M1eTQiLCJhdXRoRG9tYWluIjoiZmluYW5jYXMtOTcxZGIuZmlyZWJhc2VhcHAuY29tIiwicHJvamVjdElkIjoiZmluYW5jYXMtOTcxZGIiLCJzdG9yYWdlQnVja2V0IjoiZmluYW5jYXMtOTcxZGIuZmlyZWJhc2VzdG9yYWdlLmNvbSIsIm1lc3NhZ2luZ1NlbmRlcklkIjoiNzI1Mzc5OTcwMTYzIiwiYXBwSWQiOiIxOjcyNTM3OTk3MDE2MzpqZGI6OTAzZDRjMGE5MWVkODc5OWQ5MjYwNiIsIm1lYXN1cmVtZW50SWQiOiJHLVZMMEtaSFhDWUoifQ==";
                 const firebaseConfig = JSON.parse(atob(encodedConfig));
                 
-                const app = window.firebase.initializeApp(firebaseConfig);
-                db = window.firebase.getFirestore(app);
-                auth = window.firebase.getAuth(app);
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
                 appId = firebaseConfig.projectId;
                 
-                window.firebase.onAuthStateChanged(auth, (user) => {
+                onAuthStateChanged(auth, (user) => {
                     const loginView = document.getElementById('login-view');
                     const appView = document.getElementById('app-view');
                     const userProfileDiv = document.getElementById('user-profile');
