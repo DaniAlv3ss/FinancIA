@@ -561,7 +561,8 @@
             document.getElementById('menu-overlay').addEventListener('click', toggleMenu);
 
             try {
-                const encodedConfig = "eyJhcGlLZXkiOiJBSXphU3lCN0JPVTBCQ0hOOUxTVXZ4QUsxaXBqYnRwMU9ja3M1eTQiLCJhdXRoRG9tYWluIjoiZmluYW5jYXMtOTcxZGIuZmlyZWJhc2VhcHAuY29tIiwicHJvamVjdElkIjoiZmluYW5jYXMtOTcxZGIiLCJzdG9yYWdlQnVja2V0IjoiZmluYW5jYXMtOTcxZGIuYXBwc3BvdC5jb20iLCJtZXNzYWdpbmdTZW5kZXJJZCI6IjcyNTM3OTk3MDE2MyIsImFwcElkIjoiMTo3MjUzNzk5NzAxNjM6d2ViOjkwM2Q0YzBhOTFlZDg3OTlkOTI2MDYiLCJtZWFzdXJlbWVudElkIjoiRy1WLDBLWkhYQ1lKIn0=";
+                // CORRECTED ENCODED CONFIG
+                const encodedConfig = "eyJhcGlLZXkiOiJBSXphU3lCN0JPVTBCQ0hOOUxTVXZ4QUsxaXBqYnRwMU9ja3M1eTQiLCJhdXRoRG9tYWluIjoiZmluYW5jYXMtOTcxZGIuZmlyZWJhc2VhcHAuY29tIiwicHJvamVjdElkIjoiZmluYW5jYXMtOTcxZGIiLCJzdG9yYWdlQnVja2V0IjoiZmluYW5jYXMtOTcxZGIuZmlyZWJhc2VzdG9yYWdlLmFwcCIsIm1lc3NhZ2luZ1NlbmRlcklkIjoiNzI1Mzc5OTcwMTYzIiwiYXBwSWQiOiIxOjcyNTM3OTk3MDE2MzpqZWI6OTAzZDRjMGE5MWVkODc5OWQ5MjYwNiIsIm1lYXN1cmVtZW50SWQiOiJHLVZMMEtaSFhDWUoifQ==";
                 const firebaseConfig = JSON.parse(atob(encodedConfig));
                 
                 const app = initializeApp(firebaseConfig);
